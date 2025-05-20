@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <title>Clima en Medellín</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <h1>Clima actual en Medellín</h1>
+  <div id="clima">Cargando...</div>
+
+  <script>
+    // URLs de las dos APIs de clima que vamos a usar
+    const api1 = 'https://api.met.no/weatherapi/locationforecast/2.0/compact?lat=6.25184&lon=-75.56359';
+    const api2 = 'https://api.open-meteo.com/v1/forecast?latitude=6.25184&longitude=-75.56359&current_weather=true';
+
+    // Función para obtener datos del clima desde la API de met.no
+    async function fetchFromMetNo() {
+      const response = await fetch(api1, {
+        headers: {
+          // met.no requiere un User-Agent personalizado
+          'User-Agent': 'clase-promesas-ejemplo/1.0'
+        }
+      });
+      const data = await response.json();
+
+      // Extraemos la temperatura del primer dato disponible
+      const temperature = data.properties.timeseries[0].data.instant.details.air_temperature;
+
+      return {
+        fuente: 'met.no',
+        temperatura: temperature
+      };
+    }
+
+    // Función para obtener datos del clima desde la API de open-meteo
+    async function fetchFromOpenMeteo() {
+      const response = await fetch(api2);
+      const data = await response.json();
+
+      const temperature = data.current_weather.temperature;
+
+      return {
+        fuente: 'open-meteo',
+        temperatura: temperature
+      };
+    }
+
+    // Usamos Promise.race para obtener la respuesta más rápida de las dos
+    Promise.race([fetchFromMetNo(), fetchFromOpenMeteo()])
+      .then(resultado => {
+        // Mostramos el resultado en la página
+        document.getElementById('clima').textContent =
+          `Temperatura: ${resultado.temperatura}°C (fuente: ${resultado.fuente})`;
+      })
+      .catch(error => {
+        // En caso de error, mostramos un mensaje
+        console.error(error);
+        document.getElementById('clima').textContent = 'Error al obtener el clima.';
+      });
+  </script>
+</body>
+</html>
