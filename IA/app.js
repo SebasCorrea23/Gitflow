@@ -1,13 +1,15 @@
 const GEMINI_API_KEY = 'AIzaSyDHXI-o5Seo3QuEanDaH6JgkbBRlc1OqZc';
 const COHERE_API_KEY = '2sy7eJfUd45D8bkeVzVCYssQIQgBkP4lTOhCZy4W';
-const MISTRAL_API_KEY = '9Lv0Mi3U6HuEl6nZnkNfkfFlhj9OCncE';
+const MISTRAL_API_KEY = 'CgXElZTmC2BtyE9adPIEwtXsgjKHjjbg';
 
 async function llamarGemini(prompt) {
   const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${GEMINI_API_KEY}`;
   
   const body = {
-    contents: [{ parts: [{ text: prompt }] }]
+    contents: [{ parts: [{ text: prompt + " Por favor responde en español. Respondeme si el comentario es Negativo o Positivo." }] }]
   };
+
+  
 
   const res = await fetch(url, {
     method: 'POST',
@@ -15,8 +17,21 @@ async function llamarGemini(prompt) {
     body: JSON.stringify(body)
   });
 
+
+
+
   const data = await res.json();
-  return data?.candidates?.[0]?.content?.parts?.[0]?.text || 'Sin respuesta de Gemini.';
+  const texto= data?.candidates?.[0]?.content?.parts?.[0]?.text || 'Sin respuesta de Gemini.';
+
+  if (texto.toLowerCase().includes("positivo")) {
+    alert ("Su mensaje es positivo")  
+  }else if (texto.toLowerCase().includes("negativo")) {
+    alert ("Su mensaje es negativo")
+  }
+
+  return texto;
+
+  
 }
 
 async function llamarCohere(prompt) {
@@ -24,7 +39,7 @@ async function llamarCohere(prompt) {
 
   const body = {
     model: 'command-r-plus',
-    prompt: prompt,
+    prompt: prompt + " Por favor responde en español. Respondeme si el comentario es Negativo o Positivo.",
     max_tokens: 300,
     temperature: 0.7
   };
@@ -38,16 +53,27 @@ async function llamarCohere(prompt) {
     body: JSON.stringify(body)
   });
 
+
+
   const data = await res.json();
-  return data?.generations?.[0]?.text?.trim() || 'Sin respuesta de Cohere.';
+  const texto= data?.generations?.[0]?.text?.trim() || 'Sin respuesta de Cohere.';
+
+  if (texto.toLowerCase().includes("positivo")) {
+    alert ("Su mensaje es positivo")  
+  }else if (texto.toLowerCase().includes("negativo")) {
+    alert ("Su mensaje es negativo")
+  }
+
+  return texto;
+
 }
 
 async function llamarMistral(prompt) {
   const url = 'https://api.mistral.ai/v1/chat/completions';
 
   const body = {
-    model: 'mistral-medium',
-    messages: [{ role: 'user', content: prompt }],
+    model: 'mistral-small',
+    messages: [{ role: 'user', content: prompt + " Por favor responde en español. Respondeme si el comentario es Negativo o Positivo." }],
     temperature: 0.7,
     max_tokens: 300
   };
@@ -61,8 +87,18 @@ async function llamarMistral(prompt) {
     body: JSON.stringify(body)
   });
 
+ 
+
   const data = await res.json();
-  return data?.choices?.[0]?.message?.content || 'Sin respuesta de Mistral.';
+  const texto = data?.choices?.[0]?.message?.content || 'Sin respuesta de Mistral.';
+
+  if (texto.toLowerCase().includes("positivo")) {
+    alert ("Su mensaje es positivo")  
+  }else if (texto.toLowerCase().includes("negativo")) {
+    alert ("Su mensaje es negativo")
+  }
+
+  return texto;
 }
 
 async function consultarIA() {
